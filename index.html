@@ -15,7 +15,7 @@
 <body>
   <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
   <header class="site-header">
-    <a class="logo" href="#home"><span class="logo-icon"></></span> Arun<span class="logo-dot">.</span></a>
+    <a class="logo" href="#home"><span class="logo-icon">&lt;/&gt;</span> Arun<span class="logo-dot">.</span></a>
     <button class="menu-button" id="menuButton" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
     <nav id="nav">
       <a class="active" href="#home">Home</a><a href="#about">About</a><a href="#skills">Skills</a><a href="#projects">Projects</a><a href="#education">Education</a><a href="#experience">Experience</a><a href="#certifications">Certifications</a><a href="#contact">Contact</a>
@@ -43,7 +43,7 @@
         </div>
         <div class="floating-code">
           <div class="code-head"><span><i></i><i></i><i></i></span> arun-kumar.js <b>●</b></div>
-          <div class="code-lines"><p><em>const</em> developer = {</p><p>  name: <strong>'Arun Kumar'</strong>,</p><p>  role: <strong>'Software Developer'</strong>,</p><p>  focus: [</p><p>   <strong>'Full-Stack'</strong>,</p><p>   <strong>'Web Apps'</strong></p><p>  ]</p><p>};</p></div>
+          <div class="code-lines"><p><em>const</em> developer = {</p><p>&nbsp; name: <strong>'Arun Kumar'</strong>,</p><p>&nbsp; role: <strong>'Software Developer'</strong>,</p><p>&nbsp; focus: [</p><p>&nbsp;&nbsp; <strong>'Full-Stack'</strong>,</p><p>&nbsp;&nbsp; <strong>'Web Apps'</strong></p><p>&nbsp; ]</p><p>};</p></div>
         </div>
         <div class="float-badge badge-react"><i class="fa-brands fa-react"></i> React.js</div>
         <div class="float-badge badge-build"><i class="fa-solid fa-code"></i> Build · Learn · Repeat</div>
@@ -173,22 +173,152 @@
         <label for="message">Message</label>
         <textarea id="message" name="message" rows="5" placeholder="Write your message..." required></textarea>
         <button type="submit" class="btn btn-primary" id="submitBtn"><i class="fa-regular fa-paper-plane"></i> Send Message</button>
-        <p class="form-note">Your message will be sent to Arun, and an automatic reply will be sent to your email address.</p>
+        <p class="form-note">Your message will be delivered to Arun, and a confirmation email will be sent to your inbox.</p>
       </form>
     </div></section>
   </main>
-  <footer class="footer wrap"><a class="logo" href="#home"><span class="logo-icon"></></span> Arun<span class="logo-dot">.</span></a><p>Designed & developed by R. Arun Kumar</p><span>© <span id="year"></span> All rights reserved.</span></footer>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <footer class="footer wrap"><a class="logo" href="#home"><span class="logo-icon">&lt;/&gt;</span> Arun<span class="logo-dot">.</span></a><p>Designed & developed by R. Arun Kumar</p><span>© <span id="year"></span> All rights reserved.</span></footer>
+  <!-- EmailJS Browser SDK v4 -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>
-    // EmailJS dual-template configuration copied from your existing portfolio ZIP.
+    // Keep this Public Key exactly as shown in your EmailJS account.
+    // Your original portfolio ZIP used NkNU (capital U) in this key.
     const EMAILJS_CONFIG = {
       SERVICE_ID: 'service_ytc3fjl',
       TEMPLATE_TO_ME: 'template_03qdmuj',
       TEMPLATE_AUTO_REPLY: 'template_8ykpjhd',
-      USER_ID: 'NkNU_yvbh0b4vgRcD'
+      PUBLIC_KEY: 'NkNU_yvbh0b4vgRcD'
     };
 
-    const menuButton = document.getElementById('menuButton');
-    const nav = document.getElementById('nav');
-    menuButton.addEventListener('click', () => nav.classList.toggle('open'));
-    nav.querySelec
+    document.addEventListener('DOMContentLoaded', () => {
+      // Mobile navigation
+      const menuButton = document.getElementById('menuButton');
+      const nav = document.getElementById('nav');
+      if (menuButton && nav) {
+        menuButton.setAttribute('aria-expanded', 'false');
+        menuButton.addEventListener('click', () => {
+          const isOpen = nav.classList.toggle('open');
+          menuButton.setAttribute('aria-expanded', String(isOpen));
+          menuButton.innerHTML = isOpen
+            ? '<i class="fa-solid fa-xmark"></i>'
+            : '<i class="fa-solid fa-bars"></i>';
+        });
+        nav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+          nav.classList.remove('open');
+          menuButton.setAttribute('aria-expanded', 'false');
+          menuButton.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        }));
+      }
+
+      const year = document.getElementById('year');
+      if (year) year.textContent = new Date().getFullYear();
+
+      const form = document.getElementById('contactForm');
+      if (!form) return;
+
+      const notice = document.createElement('div');
+      notice.id = 'contactNotice';
+      notice.className = 'contact-notice';
+      notice.setAttribute('role', 'status');
+      notice.setAttribute('aria-live', 'polite');
+      form.prepend(notice);
+      notice.hidden = true;
+
+      function showNotice(message, type) {
+        notice.textContent = message;
+        notice.className = 'contact-notice ' + type;
+        notice.hidden = false;
+      }
+
+      // Initialize once, after the SDK is available.
+      if (typeof emailjs !== 'undefined') {
+        emailjs.init({ publicKey: EMAILJS_CONFIG.PUBLIC_KEY });
+      } else {
+        showNotice('The email service could not load. Please refresh the page or email me directly.', 'error');
+      }
+
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        if (typeof emailjs === 'undefined') {
+          showNotice('EmailJS did not load. Please refresh and try again.', 'error');
+          return;
+        }
+
+        const value = id => document.getElementById(id).value.trim();
+        const from_name = value('name');
+        const email = value('email');
+        const subject = value('subject');
+        const message = value('message');
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+          showNotice('Please enter a valid email address.', 'error');
+          document.getElementById('email').focus();
+          return;
+        }
+
+        const button = form.querySelector('button[type="submit"]');
+        const originalButton = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+        showNotice('Sending your message…', 'loading');
+
+        const baseParams = {
+          from_name,
+          email,
+          subject,
+          message,
+          reply_to: email,
+          date: new Date().toLocaleDateString('en-IN'),
+          time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        let ownerEmailSent = false;
+        try {
+          // First email: deliver the enquiry to Arun.
+          await emailjs.send(
+            EMAILJS_CONFIG.SERVICE_ID,
+            EMAILJS_CONFIG.TEMPLATE_TO_ME,
+            {
+              ...baseParams,
+              to_name: 'Arun Kumar',
+              to_email: 'rakumar1712005@gmail.com',
+              recipient_name: 'Arun'
+            }
+          );
+          ownerEmailSent = true;
+
+          // Second email: send a confirmation to the visitor.
+          await emailjs.send(
+            EMAILJS_CONFIG.SERVICE_ID,
+            EMAILJS_CONFIG.TEMPLATE_AUTO_REPLY,
+            {
+              ...baseParams,
+              to_name: from_name,
+              to_email: email,
+              recipient_name: from_name,
+              your_name: 'Arun Kumar',
+              your_email: 'rakumar1712005@gmail.com',
+              your_phone: '+91 63853 95719'
+            }
+          );
+
+          showNotice('Your message has been sent to Arun. A confirmation email has also been sent to you.', 'success');
+          form.reset();
+        } catch (error) {
+          console.error('EmailJS send error:', error);
+          const details = error && (error.text || error.message) ? (error.text || error.message) : 'Unknown EmailJS error';
+          if (ownerEmailSent) {
+            showNotice('Your message reached Arun, but the automatic reply could not be sent. Please check the auto-reply template settings. (' + details + ')', 'error');
+          } else {
+            showNotice('Your message could not be sent. Please check the EmailJS Public Key, Service ID and “Message to Arun” template. (' + details + ')', 'error');
+          }
+        } finally {
+          button.disabled = false;
+          button.innerHTML = originalButton;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
